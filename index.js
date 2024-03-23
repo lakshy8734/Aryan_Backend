@@ -1,7 +1,7 @@
 // index.js
 const express = require("express");
 const cors = require("cors");
-const compression = require("compression");
+// const compression = require("compression");
 const path = require("path");
 const connectDB = require("./db");
 const appointmentRoutes = require("./routes/appointmentRoutes");
@@ -21,7 +21,7 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(compression());
+// app.use(compression());
 
 // Set up the cors middleware and specify the origin
 app.use(
