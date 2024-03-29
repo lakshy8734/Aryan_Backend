@@ -64,4 +64,15 @@ router.patch('/:id/approve', async (req, res) => {
   }
  });
 
+ // GET route to fetch appointments by doctor name
+router.get('/:doctorName', async (req, res) => {
+  try {
+     const appointments = await Appointment.find({ doctorName: req.params.doctorName });
+     res.status(200).json(appointments);
+  } catch (error) {
+     console.error('Error fetching appointments by doctor name:', error.message);
+     res.status(500).json({ error: 'Internal server error' });
+  }
+ });
+
 module.exports = router;

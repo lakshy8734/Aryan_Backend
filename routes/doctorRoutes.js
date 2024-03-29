@@ -11,42 +11,46 @@ const bcrypt = require("bcrypt");
 const { check, validationResult } = require("express-validator");
 const { v4: uuidv4 } = require("uuid");
 
-router.post('/login', [
-  check('doctorId').isLength({ min: 1 }).withMessage('Doctor ID is required'),
-  check('password').isLength({ min: 1 }).withMessage('Password is required'),
- ], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array() });
+router.post(
+  "/login",
+  [
+    check("doctorId").isLength({ min: 1 }).withMessage("Doctor ID is required"),
+    check("password").isLength({ min: 1 }).withMessage("Password is required"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { doctorId, password } = req.body;
+
+      // Find the doctor by doctorId
+      const doctor = await Doctor.findOne({ doctorId });
+      if (!doctor) {
+        return res.status(404).json({ message: "Doctor not found" });
+      }
+
+      // Check if the password matches
+      const isMatch = await bcrypt.compare(password, doctor.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid password" });
+      }
+
+      // Generate a JWT token
+      const token = jwt.sign({ id: doctor._id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      // console.log(doctor.name); 
+      // Send the token back to the client
+      res.json({ token, name: doctor.name });
+    } catch (err) {
+      console.error("Error logging in doctor:", err);
+      res.status(500).json({ message: "Server Error" });
+    }
   }
- 
-  try {
-     const { doctorId, password } = req.body;
- 
-     // Find the doctor by doctorId
-     const doctor = await Doctor.findOne({ doctorId });
-     if (!doctor) {
-       return res.status(404).json({ message: 'Doctor not found' });
-     }
- 
-     // Check if the password matches
-     const isMatch = await bcrypt.compare(password, doctor.password);
-     if (!isMatch) {
-       return res.status(400).json({ message: 'Invalid password' });
-     }
- 
-     // Generate a JWT token
-     const token = jwt.sign({ id: doctor._id }, process.env.JWT_SECRET, {
-       expiresIn: '1h',
-     });
- 
-     // Send the token back to the client
-     res.json({ token });
-  } catch (err) {
-     console.error('Error logging in doctor:', err);
-     res.status(500).json({ message: 'Server Error' });
-  }
- });
+);
 
 router.get("/", async (req, res) => {
   try {
