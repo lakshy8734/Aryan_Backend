@@ -10,7 +10,10 @@ const AdminSchema = new mongoose.Schema({
     type: String,
     required: true,
  },
- // Add any other fields you need for the admin model
+ type: {
+    type: Number,
+    required: true,
+ },
 });
 
 const Admin = mongoose.model('Admin', AdminSchema);
