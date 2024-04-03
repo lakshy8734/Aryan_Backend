@@ -42,7 +42,7 @@ router.post(
       const token = jwt.sign({ id: doctor._id }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
-      // console.log(doctor.name); 
+      // console.log(doctor.name);
       // Send the token back to the client
       res.json({ token, name: doctor.name });
     } catch (err) {
@@ -71,13 +71,10 @@ router.post(
     check("department").notEmpty().withMessage("Department is required"),
     check("about").notEmpty().withMessage("About is required"),
     check("experience").notEmpty().withMessage("Experience is required"),
-    check("password")
-      .if(check("isAdmin").equals(true)) // Only check username if isAdmin is true
-      .notEmpty()
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
+    check("isAdmin").isBoolean().withMessage("isAdmin must be a boolean"),
     check("username")
-      .if(check("isAdmin").equals(true)) // Only check username if isAdmin is true
+      .optional()
+      .if(check("isAdmin").equals(true))
       .notEmpty()
       .withMessage("Username is required")
       .custom(async (username) => {
@@ -87,6 +84,12 @@ router.post(
         }
         return true;
       }),
+    check("password")
+      .optional()
+      .if(check("isAdmin").equals(true))
+      .notEmpty()
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -229,5 +232,15 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
+router.get("/", async (req, res) => {
+  try {
+     const doctors = await Doctor.find({}, 'name doctorId'); // Assuming 'name' and 'doctorId' are the fields you want
+     res.json(doctors);
+  } catch (err) {
+     console.error("Error fetching doctors:", err);
+     res.status(500).json({ message: "Server Error" });
+  }
+ });
 
 module.exports = router;
