@@ -4,6 +4,20 @@ const Admin = require("../models/AdminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
+const { v4: uuidv4 } = require('uuid');
+
+// GET route to retrieve all admins
+router.get("/", async (req, res) => {
+  try {
+     // Find all admins
+     const admins = await Admin.find({});
+     // Return the admins
+     res.status(200).json(admins);
+  } catch (err) {
+     console.error("Error fetching admins:", err);
+     res.status(500).json({ message: "Server Error" });
+  }
+ });
 
 // Admin Login Route
 router.post(
@@ -59,31 +73,32 @@ const handleValidationErrors = (req, res, next) => {
 router.post(
   "/",
   [
-    check("username").notEmpty().withMessage("Username is required"),
-    check("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
-    check("type")
-      .isInt({ gt: 0 })
-      .withMessage("Type must be a positive integer"),
-    handleValidationErrors, // Middleware to handle validation errors
+     check("username").notEmpty().withMessage("Username is required"),
+     check("password")
+       .isLength({ min: 6 })
+       .withMessage("Password must be at least 6 characters long"),
+     check("type")
+       .isInt({ gt: 0 })
+       .withMessage("Type must be a positive integer"),
+     handleValidationErrors, // Middleware to handle validation errors
   ],
   async (req, res) => {
-    try {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const newAdmin = new Admin({
-        username: req.body.username,
-        password: hashedPassword,
-        type: req.body.type,
-      });
-      const savedAdmin = await newAdmin.save();
-      res.status(201).json(savedAdmin);
-    } catch (err) {
-      console.error("Error adding admin:", err);
-      res.status(500).json({ message: "Server Error" });
-    }
+     try {
+       const hashedPassword = await bcrypt.hash(req.body.password, 10);
+       const newAdmin = new Admin({
+         adminId: uuidv4(), // Generate a new adminId
+         username: req.body.username,
+         password: hashedPassword,
+         type: req.body.type,
+       });
+       const savedAdmin = await newAdmin.save();
+       res.status(201).json(savedAdmin);
+     } catch (err) {
+       console.error("Error adding admin:", err);
+       res.status(500).json({ message: "Server Error" });
+     }
   }
-);
+ );
 // DELETE route to delete an admin
 router.delete("/:adminId", async (req, res) => {
   try {

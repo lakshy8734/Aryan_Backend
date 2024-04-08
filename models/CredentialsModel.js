@@ -15,6 +15,10 @@ const CredentialsSchema = new mongoose.Schema({
     type: Number,
     required: true,
  },
+ profileId: { // New field
+    type: String, // Assuming profileId is a string, adjust the type as necessary
+    required: true, // This field is required
+ },
 });
 
 module.exports = mongoose.model('Credentials', CredentialsSchema);

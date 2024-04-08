@@ -65,71 +65,48 @@ router.get("/", async (req, res) => {
 router.post(
   "/",
   [
-    upload.single("image"),
-    check("name").notEmpty().withMessage("Name is required"),
-    check("education").notEmpty().withMessage("Education is required"),
-    check("department").notEmpty().withMessage("Department is required"),
-    check("about").notEmpty().withMessage("About is required"),
-    check("experience").notEmpty().withMessage("Experience is required"),
-    check("isAdmin").isBoolean().withMessage("isAdmin must be a boolean"),
-    check("username")
-      .optional()
-      .if(check("isAdmin").equals(true))
-      .notEmpty()
-      .withMessage("Username is required")
-      .custom(async (username) => {
-        const existingDoctor = await Doctor.findOne({ username });
-        if (existingDoctor) {
-          throw new Error("Username already exists");
-        }
-        return true;
-      }),
-    check("password")
-      .optional()
-      .if(check("isAdmin").equals(true))
-      .notEmpty()
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
+     upload.single("image"),
+     check("name")
+       .notEmpty()
+       .withMessage("Name is required")
+       .matches(/^[a-zA-Z\s]+$/)
+       .withMessage("Name can only contain letters and spaces"),
+     check("education").notEmpty().withMessage("Education is required"),
+     check("department").notEmpty().withMessage("Department is required"),
+     check("about").notEmpty().withMessage("About is required"),
+     check("experience").notEmpty().withMessage("Experience is required"),
   ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    try {
-      // Generate a random doctorId
-      const doctorId = uuidv4();
-
-      // Hash the password
-      let hashedPassword = null;
-      if (req.body.isAdmin && req.body.password) {
-        hashedPassword = await bcrypt.hash(req.body.password, 10);
-      }
-
-      const newDoctor = new Doctor({
-        doctorId: doctorId,
-        name: req.body.name,
-        education: req.body.education,
-        department: req.body.department,
-        about: req.body.about,
-        experience: req.body.experience,
-        image: req.file.path,
-        youtubeLink: req.body.youtubeLink,
-        instagramLink: req.body.instagramLink,
-        facebookLink: req.body.facebookLink,
-        username: req.body.username,
-        password: hashedPassword,
-      });
-
-      const savedDoctor = await newDoctor.save();
-      res.status(201).json(savedDoctor);
-    } catch (err) {
-      console.error("Error adding doctor:", err);
-      res.status(500).json({ message: "Server Error" });
-    }
+     const errors = validationResult(req);
+     if (!errors.isEmpty()) {
+       return res.status(400).json({ errors: errors.array() });
+     }
+ 
+     try {
+       // Generate a random doctorId
+       const doctorId = uuidv4();
+ 
+       const newDoctor = new Doctor({
+         doctorId: doctorId,
+         name: req.body.name,
+         education: req.body.education,
+         department: req.body.department,
+         about: req.body.about,
+         experience: req.body.experience,
+         image: req.file.path,
+         youtubeLink: req.body.youtubeLink,
+         instagramLink: req.body.instagramLink,
+         facebookLink: req.body.facebookLink,
+       });
+ 
+       const savedDoctor = await newDoctor.save();
+       res.status(201).json(savedDoctor);
+     } catch (err) {
+       console.error("Error adding doctor:", err);
+       res.status(500).json({ message: "Server Error" });
+     }
   }
-);
+ );
 
 router.get("/:doctorId", async (req, res) => {
   try {
@@ -203,44 +180,32 @@ router.patch("/:doctorId/toggle-active", async (req, res) => {
   }
 });
 
-// Add this route to your doctorRoutes.js
-router.post("/login", async (req, res) => {
+// Route to fetch a doctor's details by profileId
+router.get("/profile/:profileId", async (req, res) => {
   try {
-    const { doctorId, password } = req.body;
-
-    // Find the doctor by doctorId
-    const doctor = await Doctor.findOne({ doctorId });
-    if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
-    }
-
-    // Check if the password matches
-    const isMatch = await bcrypt.compare(password, doctor.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
-
-    // Generate a JWT token
-    const token = jwt.sign({ id: doctor._id }, process.env.JWT_SECRET, {
-      expiresIn: "1m",
-    });
-
-    // Send the token back to the client
-    res.json({ token });
+     const doctor = await Doctor.findOne({ doctorId: req.params.profileId });
+     if (!doctor) {
+       return res.status(404).json({ message: "Doctor not found" });
+     }
+     // Return all the doctor's details
+     res.json(doctor);
   } catch (err) {
-    console.error("Error logging in doctor:", err);
-    res.status(500).json({ message: "Server Error" });
-  }
-});
-
-router.get("/", async (req, res) => {
-  try {
-     const doctors = await Doctor.find({}, 'name doctorId'); // Assuming 'name' and 'doctorId' are the fields you want
-     res.json(doctors);
-  } catch (err) {
-     console.error("Error fetching doctors:", err);
+     console.error("Error fetching doctor:", err);
      res.status(500).json({ message: "Server Error" });
   }
  });
 
+router.get("/", async (req, res) => {
+  try {
+    const doctors = await Doctor.find({}, "name doctorId"); // Assuming 'name' and 'doctorId' are the fields you want
+    res.json(doctors);
+  } catch (err) {
+    console.error("Error fetching doctors:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+
+
 module.exports = router;
+

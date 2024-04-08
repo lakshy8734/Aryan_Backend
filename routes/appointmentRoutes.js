@@ -2,6 +2,52 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
+const nodemailer = require('nodemailer');
+
+// POST route to send appointment confirmation email
+router.post('/send-email', async (req, res) => {
+  const { email, appointmentDetails, paymentLink } = req.body;
+
+  try {
+    // Create a transporter object using SMTP transport
+    const transporter = nodemailer.createTransport({
+      service:'gmail',
+      host: 'smtp.gmail.com',
+      port : 587,
+      secure: false,
+      auth: {
+        user: process.env.USER, 
+        pass: process.env.PASS, 
+    
+      },
+    });
+
+    // Send email
+    await transporter.sendMail({
+      from: {
+        name: 'Weeb',
+        address: process.env.USER
+      },
+      to: email,
+      subject: 'Appointment Confirmation',
+      html: `
+        <p>Dear ${appointmentDetails.name},</p>
+        <p>Your appointment has been scheduled successfully. Here are the details:</p>
+        <p>Date: ${appointmentDetails.date}</p>
+        <p>Time: ${appointmentDetails.time}</p>
+        <p>Doctor: ${appointmentDetails.doctor}</p>
+        <p>Department: ${appointmentDetails.department}</p>
+        <p>Payment Link: <a href="${paymentLink}">${paymentLink}</a></p>
+        <p>Thank you for choosing our services.</p>
+      `,
+    });
+
+    res.status(200).json({ message: 'Confirmation email sent successfully' });
+  } catch (error) {
+    console.error('Error sending email:', error.message);
+    res.status(500).json({ error: 'Failed to send confirmation email' });
+  }
+});
 
 // POST route to save appointment details
 router.post(
@@ -35,6 +81,33 @@ router.post(
  }
 );
 
+// New GET route to fetch only approved and active appointments
+router.get('/approved-active', async (req, res) => {
+  try {
+     const appointments = await Appointment.find({ isApproved: true, isActive: true });
+     res.status(200).json(appointments);
+  } catch (error) {
+     console.error('Error fetching approved and active appointments:', error.message);
+     res.status(500).json({ error: 'Internal server error' });
+  }
+ });
+
+ // New GET route to fetch only approved and active appointments for a specific profileId
+router.get('/approved-active/:profileId', async (req, res) => {
+  const { profileId } = req.params;
+  try {
+     const appointments = await Appointment.find({
+       doctorId: profileId, // Assuming doctorId is used to store profileId
+       isApproved: true,
+       isActive: true
+     });
+     res.status(200).json(appointments);
+  } catch (error) {
+     console.error('Error fetching approved and active appointments:', error.message);
+     res.status(500).json({ error: 'Internal server error' });
+  }
+ });
+
 // GET route to fetch all appointment details
 router.get('/', async (req, res) => {
  try {
@@ -46,25 +119,27 @@ router.get('/', async (req, res) => {
  }
 });
 
-// Approve an appointment
-router.patch('/:id/approve', async (req, res) => {
- try {
-     const appointment = await Appointment.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
+// Update appointment status (approve or reject)
+router.patch('/:id/status', async (req, res) => {
+  try {
+     const { action } = req.body;
+     let update = {};
+ 
+     if (action === 'approve') {
+       update = { isApproved: true };
+     } else if (action === 'reject') {
+       update = { isApproved: false };
+     } else {
+       return res.status(400).json({ error: 'Invalid action' });
+     }
+ 
+     const appointment = await Appointment.findByIdAndUpdate(req.params.id, update, { new: true });
      res.status(200).json(appointment);
- } catch (error) {
+  } catch (error) {
+     console.error('Error updating appointment status:', error.message);
      res.status(500).json({ error: 'Internal server error' });
- }
-});
-
-// Reject an appointment
-router.patch('/:id/reject', async (req, res) => {
- try {
-     const appointment = await Appointment.findByIdAndUpdate(req.params.id, { isApproved: false }, { new: true });
-     res.status(200).json(appointment);
- } catch (error) {
-     res.status(500).json({ error: 'Internal server error' });
- }
-});
+  }
+ });
 
 // GET route to fetch appointments by doctorId
 router.get('/:doctorId', async (req, res) => {

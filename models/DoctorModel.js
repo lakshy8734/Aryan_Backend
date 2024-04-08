@@ -14,8 +14,6 @@ const doctorSchema = new mongoose.Schema(
     instagramLink: { type: String },
     facebookLink: { type: String },
     isActive: { type: Boolean, default: true },
-    username: { type: String, unique: true },
-    password: { type: String },
   },
   { timestamps: true }
 );

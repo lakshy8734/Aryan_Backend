@@ -10,6 +10,7 @@ const blogRoutes = require("./routes/blogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const adminRoutes = require("./routes/adminRoutes"); // Import the admin routes
 const credentialsRoutes = require('./routes/credentialsRoutes');
+const smsRoutes = require('./routes/SMSRouter')
 
 // Load environment variables
 require("dotenv").config();
@@ -23,13 +24,12 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(compression());
-
-// Set up the cors middleware and specify the origin
 app.use(
- cors({
-    origin: process.env.FRONTEND_DOMAIN, // replace with your website's URL
- })
-);
+   cors({
+      
+   })
+)
+
 
 // Serve static files from the uploads/doctors and uploads/blogs directories
 app.use(
@@ -48,6 +48,7 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes); // Add the admin routes
 app.use('/api/credentials', credentialsRoutes);
+app.use("/api/msg", smsRoutes); // Use smsRoutes for /api/msg endpoint
 
 // Start the server
 const PORT = process.env.PORT || 5000;

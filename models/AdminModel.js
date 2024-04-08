@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const AdminSchema = new mongoose.Schema({
+ adminId: {
+    type: String,
+    required: true,
+    unique: true,
+ },
  username: {
     type: String,
     required: true,
