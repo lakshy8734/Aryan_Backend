@@ -54,7 +54,8 @@ router.post(
 
 router.get("/", async (req, res) => {
   try {
-    const doctors = await Doctor.find();
+    // const doctors = await Doctor.find();
+    const doctors = [{name:'abc', title: 'ace'},{name:'xyz', title:'crown'}];
     res.json(doctors);
   } catch (err) {
     console.error("Error fetching doctors:", err);
