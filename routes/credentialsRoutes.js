@@ -80,7 +80,7 @@ router.post("/login", validateLogin, async (req, res) => {
          }
        );
        // Return the token and type associated with the credentials
-       res.json({ token, type: credentials.type });
+       res.json({ token, type: credentials.type, profileId: credentials.profileId });
      } else if (credentials.type === 2) {
        // Generate a different JWT token for type 2
        const docToken = jwt.sign(
@@ -91,7 +91,7 @@ router.post("/login", validateLogin, async (req, res) => {
          }
        );
        // Return the docToken and type associated with the credentials
-       res.json({ docToken, type: credentials.type });
+       res.json({ docToken, type: credentials.type, profileId: credentials.profileId });
      } else {
        // If type is not 1 or 2, return the type without a token
        res.json({ type: credentials.type, profileId: credentials.profileId });
