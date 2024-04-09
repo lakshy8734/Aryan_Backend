@@ -54,7 +54,6 @@ router.post(
 
 router.get("/", async (req, res) => {
   try {
-    // const doctors = await Doctor.find();
     const doctors = await Doctor.find();
     res.json(doctors);
   } catch (err) {
@@ -76,6 +75,7 @@ router.post(
      check("department").notEmpty().withMessage("Department is required"),
      check("about").notEmpty().withMessage("About is required"),
      check("experience").notEmpty().withMessage("Experience is required"),
+     check("fees").notEmpty().withMessage("Fees is required"),
   ],
   async (req, res) => {
      const errors = validationResult(req);
@@ -94,6 +94,7 @@ router.post(
          department: req.body.department,
          about: req.body.about,
          experience: req.body.experience,
+         fees: req.body.fees,
          image: req.file.path,
          youtubeLink: req.body.youtubeLink,
          instagramLink: req.body.instagramLink,

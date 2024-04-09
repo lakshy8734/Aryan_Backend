@@ -46,50 +46,60 @@ router.post("/", validateCredentials, async (req, res) => {
 
 
 // Login route
+// Login route
 router.post("/login", validateLogin, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+     return res.status(400).json({ errors: errors.array() });
   }
-
+ 
   try {
-    const { username, password } = req.body;
-
-    // Find the credentials by username
-    const credentials = await Credentials.findOne({ username });
-    console.log(credentials.profileId); // Add this line to log the credentials object
-    if (!credentials) {
-      return res.status(404).json({ message: "Credentials not found" });
-    }
-
-    // Check if the password matches
-    const isMatch = await bcrypt.compare(password, credentials.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
-
-    // Check if the type is 1 before generating a token
-    if (credentials.type === 1) {
-      // Generate a JWT token
-      const token = jwt.sign(
-        { id: credentials._id, type: credentials.type },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "1h", // Token expiration time
-        }
-      );
-      // console.log( credentials.profileId );
-
-      // Return the token and type associated with the credentials
-      res.json({ token, type: credentials.type  });
-    } else {
-      // If type is not 1, return the type without a token
-      res.json({ type: credentials.type, profileId: credentials.profileId });
-    }
+     const { username, password } = req.body;
+ 
+     // Find the credentials by username
+     const credentials = await Credentials.findOne({ username });
+     console.log(credentials.profileId); // Add this line to log the credentials object
+     if (!credentials) {
+       return res.status(404).json({ message: "Credentials not found" });
+     }
+ 
+     // Check if the password matches
+     const isMatch = await bcrypt.compare(password, credentials.password);
+     if (!isMatch) {
+       return res.status(400).json({ message: "Invalid password" });
+     }
+ 
+     // Check if the type is 1 before generating a token
+     if (credentials.type === 1) {
+       // Generate a JWT token for type 1
+       const token = jwt.sign(
+         { id: credentials._id, type: credentials.type },
+         process.env.JWT_SECRET,
+         {
+           expiresIn: "1h", // Token expiration time
+         }
+       );
+       // Return the token and type associated with the credentials
+       res.json({ token, type: credentials.type });
+     } else if (credentials.type === 2) {
+       // Generate a different JWT token for type 2
+       const docToken = jwt.sign(
+         { id: credentials._id, type: credentials.type },
+         process.env.JWT_SECRET, // Ensure you have a different secret or key for type 2 if needed
+         {
+           expiresIn: "1h", // Token expiration time
+         }
+       );
+       // Return the docToken and type associated with the credentials
+       res.json({ docToken, type: credentials.type });
+     } else {
+       // If type is not 1 or 2, return the type without a token
+       res.json({ type: credentials.type, profileId: credentials.profileId });
+     }
   } catch (error) {
-    console.error("Error during login:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+     console.error("Error during login:", error.message);
+     res.status(500).json({ error: "Internal server error" });
   }
-});
+ });
 
 module.exports = router;
