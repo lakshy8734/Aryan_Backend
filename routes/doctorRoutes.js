@@ -76,6 +76,7 @@ router.post(
      check("about").notEmpty().withMessage("About is required"),
      check("experience").notEmpty().withMessage("Experience is required"),
      check("fees").notEmpty().withMessage("Fees is required"),
+     check("speciality").notEmpty().withMessage("speciality is required"),
   ],
   async (req, res) => {
      const errors = validationResult(req);
@@ -99,6 +100,7 @@ router.post(
          youtubeLink: req.body.youtubeLink,
          instagramLink: req.body.instagramLink,
          facebookLink: req.body.facebookLink,
+         speciality: req.body.speciality,
        });
  
        const savedDoctor = await newDoctor.save();
