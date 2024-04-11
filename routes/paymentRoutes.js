@@ -3,6 +3,7 @@
    const router = express.Router();
    const Razorpay = require('razorpay');
    const crypto = require('crypto');
+   const Payment = require('../models/PaymentModel'); 
 //    const config = require('../config');
 
    const client = new Razorpay({
@@ -34,5 +35,17 @@
        paymentId: razorpay_payment_id,
      });
    });
+
+   router.post('/submit', async (req, res) => {
+    try {
+       const payment = new Payment(req.body);
+       await payment.save();
+       res.status(201).json(payment);
+    } catch (error) {
+       console.error("Error submitting payment:", error.message);
+       res.status(500).json({ message: "Server Error" });
+    }
+   });
+   
 
    module.exports = router;
