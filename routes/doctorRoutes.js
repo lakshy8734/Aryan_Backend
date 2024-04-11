@@ -76,7 +76,8 @@ router.post(
      check("about").notEmpty().withMessage("About is required"),
      check("experience").notEmpty().withMessage("Experience is required"),
      check("fees").notEmpty().withMessage("Fees is required"),
-     check("speciality").notEmpty().withMessage("speciality is required"),
+     check("speciality").notEmpty().withMessage("Speciality is required"),
+     // Remove time slots from the validation middleware
   ],
   async (req, res) => {
      const errors = validationResult(req);
@@ -88,6 +89,12 @@ router.post(
        // Generate a random doctorId
        const doctorId = uuidv4();
  
+       // Parse time slots from the request body
+       const timeSlots = JSON.parse(req.body.timeSlots); 
+       const availableDates = JSON.parse(req.body.availableDates);
+
+       console.log(req.body); // Log the received data
+
        const newDoctor = new Doctor({
          doctorId: doctorId,
          name: req.body.name,
@@ -97,10 +104,12 @@ router.post(
          experience: req.body.experience,
          fees: req.body.fees,
          image: req.file.path,
+         availableDates: availableDates,
          youtubeLink: req.body.youtubeLink,
          instagramLink: req.body.instagramLink,
          facebookLink: req.body.facebookLink,
          speciality: req.body.speciality,
+         timeSlots: timeSlots, // Include time slots in the new doctor document
        });
  
        const savedDoctor = await newDoctor.save();
