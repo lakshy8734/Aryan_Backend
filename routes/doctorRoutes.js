@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { check, validationResult } = require("express-validator");
+const { check, validationResult, body } = require("express-validator");
 const { v4: uuidv4 } = require("uuid");
 
 router.post(
@@ -63,63 +63,90 @@ router.get("/", async (req, res) => {
 });
 
 router.post(
-  "/",
-  [
-     upload.single("image"),
-     check("name")
-       .notEmpty()
-       .withMessage("Name is required")
-       .matches(/^[a-zA-Z\s]+$/)
-       .withMessage("Name can only contain letters and spaces"),
-     check("education").notEmpty().withMessage("Education is required"),
-     check("department").notEmpty().withMessage("Department is required"),
-     check("about").notEmpty().withMessage("About is required"),
-     check("experience").notEmpty().withMessage("Experience is required"),
-     check("fees").notEmpty().withMessage("Fees is required"),
-     check("speciality").notEmpty().withMessage("Speciality is required"),
-     // Remove time slots from the validation middleware
-  ],
-  async (req, res) => {
-     const errors = validationResult(req);
-     if (!errors.isEmpty()) {
-       return res.status(400).json({ errors: errors.array() });
-     }
- 
-     try {
-       // Generate a random doctorId
-       const doctorId = uuidv4();
- 
-       // Parse time slots from the request body
-       const timeSlots = JSON.parse(req.body.timeSlots); 
-      //  const availableDates = JSON.parse(req.body.availableDates);
+ "/",
+ [
+    upload.single("image"),
+    check("name")
+      .notEmpty()
+      .withMessage("Name is required")
+      .matches(/^[a-zA-Z\s]+$/)
+      .withMessage("Name can only contain letters and spaces"),
+    check("education").notEmpty().withMessage("Education is required"),
+    check("department").notEmpty().withMessage("Department is required"),
+    check("about").notEmpty().withMessage("About is required"),
+    check("experience").notEmpty().withMessage("Experience is required"),
+    check("fees").notEmpty().withMessage("Fees is required"),
+    check("speciality").notEmpty().withMessage("Speciality is required"),
+    // Custom validation for timeSlots
+    body("timeSlots")
+      .custom((value) => {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed) || parsed.length === 0) {
+            throw new Error("Time slots must be a non-empty array");
+          }
+          return true; // Indicates the validation passed
+        } catch (error) {
+          return false; // Indicates the validation failed
+        }
+      })
+      .withMessage("Time slots must be a non-empty array"),
+    // Custom validation for workingDays
+    body("workingDays")
+      .custom((value) => {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed) || parsed.length === 0) {
+            throw new Error("Working days must be a non-empty array");
+          }
+          return true; // Indicates the validation passed
+        } catch (error) {
+          return false; // Indicates the validation failed
+        }
+      })
+      .withMessage("Working days must be a non-empty array"),
+ ],
+ async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-       console.log(req.body); // Log the received data
+    try {
+      // Generate a random doctorId
+      const doctorId = uuidv4();
 
-       const newDoctor = new Doctor({
-         doctorId: doctorId,
-         name: req.body.name,
-         education: req.body.education,
-         department: req.body.department,
-         about: req.body.about,
-         experience: req.body.experience,
-         fees: req.body.fees,
-         image: req.file.path,
-        //  availableDates: availableDates,
-         youtubeLink: req.body.youtubeLink,
-         instagramLink: req.body.instagramLink,
-         facebookLink: req.body.facebookLink,
-         speciality: req.body.speciality,
-         timeSlots: timeSlots, // Include time slots in the new doctor document
-       });
- 
-       const savedDoctor = await newDoctor.save();
-       res.status(201).json(savedDoctor);
-     } catch (err) {
-       console.error("Error adding doctor:", err);
-       res.status(500).json({ message: "Server Error" });
-     }
-  }
- );
+      // Parse time slots from the request body
+      const timeSlots = JSON.parse(req.body.timeSlots);
+
+      // Parse working days from the request body
+      const workingDays = JSON.parse(req.body.workingDays);
+
+      const newDoctor = new Doctor({
+        doctorId: doctorId,
+        name: req.body.name,
+        education: req.body.education,
+        department: req.body.department,
+        about: req.body.about,
+        experience: req.body.experience,
+        fees: req.body.fees,
+        image: req.file.path,
+        youtubeLink: req.body.youtubeLink,
+        instagramLink: req.body.instagramLink,
+        facebookLink: req.body.facebookLink,
+        speciality: req.body.speciality,
+        timeSlots: timeSlots,
+        workingDays: workingDays, // Include working days in the new doctor document
+      });
+
+      const savedDoctor = await newDoctor.save();
+      res.status(201).json(savedDoctor);
+    } catch (err) {
+      console.error("Error adding doctor:", err);
+      res.status(500).json({ message: "Server Error" });
+    }
+ }
+);
 
 router.get("/:doctorId", async (req, res) => {
   try {
