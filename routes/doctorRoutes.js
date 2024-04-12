@@ -91,7 +91,7 @@ router.post(
  
        // Parse time slots from the request body
        const timeSlots = JSON.parse(req.body.timeSlots); 
-       const availableDates = JSON.parse(req.body.availableDates);
+      //  const availableDates = JSON.parse(req.body.availableDates);
 
        console.log(req.body); // Log the received data
 
@@ -104,7 +104,7 @@ router.post(
          experience: req.body.experience,
          fees: req.body.fees,
          image: req.file.path,
-         availableDates: availableDates,
+        //  availableDates: availableDates,
          youtubeLink: req.body.youtubeLink,
          instagramLink: req.body.instagramLink,
          facebookLink: req.body.facebookLink,

@@ -17,7 +17,7 @@ const doctorSchema = new mongoose.Schema(
     about: { type: String },
     experience: { type: String },
     fees: { type: Number },
-    availableDates: [String], 
+   //  availableDates: [String], 
     image: { type: String },
     youtubeLink: { type: String },
     instagramLink: { type: String },
