@@ -38,7 +38,7 @@ const validateImage = (req, res, next) => {
     return res.status(400).json({ errors: [{ msg: "File is not an image" }] });
   }
   // Example: Check if the file size is within a limit (e.g., 2MB)
-  const maxSize = 2 * 1024 * 1024; // 2MB
+  const maxSize = 10 * 1024 * 1024; // 2MB
   if (req.file.size > maxSize) {
     return res
       .status(400)
