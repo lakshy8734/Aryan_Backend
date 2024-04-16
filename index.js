@@ -9,7 +9,8 @@ const blogRoutes = require("./routes/blogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const adminRoutes = require("./routes/adminRoutes"); // Import the admin routes
 const credentialsRoutes = require('./routes/credentialsRoutes');
-const smsRoutes = require('./routes/SMSRouter')
+const smsRoutes = require('./routes/SMSRouter');
+const contactRoutes = require("./routes/contactRoutes"); // Import the contact routes
 
 // Load environment variables
 require("dotenv").config();
@@ -46,6 +47,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes); // Add the admin routes
 app.use('/api/credentials', credentialsRoutes);
 app.use("/api/msg", smsRoutes); // Use smsRoutes for /api/msg endpoint
+app.use("/api/contacts", contactRoutes); // Use contactRoutes for /api/contacts endpoint
 
 // Start the server
 const PORT = process.env.PORT || 5000;
