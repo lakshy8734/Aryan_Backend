@@ -28,13 +28,6 @@ app.use(
    })
 )
 
-// Set up the cors middleware and specify the origin
-app.use(
- cors({
-    origin: process.env.FRONTEND_DOMAIN, // replace with your website's URL
- })
-);
-
 // Serve static files from the uploads/doctors and uploads/blogs directories
 app.use(
  "/uploads/doctors",

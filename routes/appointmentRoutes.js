@@ -27,9 +27,8 @@ router.post("/send-email", async (req, res) => {
       html: `
         <p>Dear ${appointmentDetails.name},</p>
         <p>Your appointment has been scheduled successfully. Here are the details:</p>
-        <p>Date: ${appointmentDetails.date}</p>
-        <p>Time: ${appointmentDetails.time}</p>
-        <p>Doctor: ${appointmentDetails.doctor}</p>
+        <p>Appointment Date: ${appointmentDetails.date}</p>
+        <p>Appointment Time: ${appointmentDetails.time}</p>
         <p>Department: ${appointmentDetails.department}</p>
         <p>Thank you for choosing our services.</p>
       `,
