@@ -71,6 +71,28 @@ router.post(
     }
 
     try {
+      // Check for duplicate email
+      const existingAppointmentWithEmail = await Appointment.findOne({
+        email: req.body.email,
+      });
+
+      if (existingAppointmentWithEmail) {
+        return res.status(400).json({
+          error: "An appointment with the same email already exists.",
+        });
+      }
+
+      // Check for duplicate phone number
+      const existingAppointmentWithPhoneNo = await Appointment.findOne({
+        phoneNo: req.body.phoneNo,
+      });
+
+      if (existingAppointmentWithPhoneNo) {
+        return res.status(400).json({
+          error: "An appointment with the same phone number already exists.",
+        });
+      }
+
       const appointment = await Appointment.create(req.body);
       console.log(appointment);
       res.status(201).json(appointment);
@@ -84,29 +106,31 @@ router.post(
 // GET route to fetch total count of male and female from confirmed appointments for a specific doctor
 router.get("/gender-distribution/:profileId", async (req, res) => {
   try {
-     const { profileId } = req.params;
- 
-     // Aggregate data to count the number of male and female appointments for the specified doctor
-     const result = await Appointment.aggregate([
-       { $match: { doctorId: profileId, isActive: true, isApproved: true } },
-       {
-         $group: {
-           _id: null, // Group all documents together
-           totalMale: { $sum: { $cond: [{ $eq: ["$gender", "male"] }, 1, 0] } },
-           totalFemale: { $sum: { $cond: [{ $eq: ["$gender", "female"] }, 1, 0] } },
-         },
-       },
-     ]);
- 
-     // Since we grouped all documents together, we expect only one result
-     const genderDistribution = result[0] || { totalMale: 0, totalFemale: 0 };
- 
-     res.status(200).json(genderDistribution);
+    const { profileId } = req.params;
+
+    // Aggregate data to count the number of male and female appointments for the specified doctor
+    const result = await Appointment.aggregate([
+      { $match: { doctorId: profileId, isActive: true, isApproved: true } },
+      {
+        $group: {
+          _id: null, // Group all documents together
+          totalMale: { $sum: { $cond: [{ $eq: ["$gender", "male"] }, 1, 0] } },
+          totalFemale: {
+            $sum: { $cond: [{ $eq: ["$gender", "female"] }, 1, 0] },
+          },
+        },
+      },
+    ]);
+
+    // Since we grouped all documents together, we expect only one result
+    const genderDistribution = result[0] || { totalMale: 0, totalFemale: 0 };
+
+    res.status(200).json(genderDistribution);
   } catch (error) {
-     console.error("Error fetching gender distribution:", error.message);
-     res.status(500).json({ error: "Internal server error" });
+    console.error("Error fetching gender distribution:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
- });
+});
 
 // New GET route to fetch only approved and active appointments
 router.get("/approved-active", async (req, res) => {

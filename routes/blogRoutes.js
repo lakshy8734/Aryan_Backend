@@ -132,6 +132,37 @@ router.patch("/:id/toggle-active", async (req, res) => {
   }
 });
 
+router.post("/:id/like", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
+
+  await blog.incrementLikeCount();
+  res.json({ message: "Like count incremented successfully", blog });
+});
+
+router.post("/:id/view", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
+
+  await blog.incrementViewCount();
+  res.json({ message: "View count incremented successfully", blog });
+});
+
+
+router.post("/:id/unlike", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
+
+  await blog.decrementLikeCount();
+  res.json({ message: "Like count decremented successfully", blog });
+});
+
 // Add more routes for updating and deleting blogs as needed
 
 module.exports = router;
