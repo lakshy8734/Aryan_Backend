@@ -4,6 +4,35 @@ const { body, validationResult } = require("express-validator");
 const Appointment = require("../models/Appointment");
 const nodemailer = require("nodemailer");
 
+// Route to get all appointment times for a specific doctor
+router.get("/appointments/:doctorId", async (req, res) => {
+  const { doctorId } = req.params;
+  console.log(doctorId);
+
+  // Validate doctorId (example: check if it exists in the database)
+  const doctor = await Doctor.findById(doctorId);
+  if (!doctor) {
+    return res.status(404).json({ error: "Doctor not found" });
+  }
+
+  try {
+    // Find appointments by doctorId and project only the 'time' field
+    const appointments = await Appointment.find({ doctorId: doctorId }).select(
+      "time"
+    );
+
+    // Extract times from appointments
+    const appointmentTimes = appointments.map(
+      (appointment) => appointment.time
+    );
+
+    res.status(200).json(appointmentTimes);
+  } catch (error) {
+    console.error("Error fetching appointment times:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // POST route to send appointment confirmation email
 router.post("/send-email", async (req, res) => {
   const { email, appointmentDetails } = req.body;
