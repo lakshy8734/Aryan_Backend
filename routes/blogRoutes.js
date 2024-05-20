@@ -92,10 +92,16 @@ router.post(
   }
 );
 
+const validateEditBlog = [
+  body("title").notEmpty().withMessage("Title is required"),
+  body("detail").notEmpty().withMessage("Detail is required"),
+  body("authorName").notEmpty().withMessage("Author Name is required"),
+];
+
 router.put(
   "/:id",
   upload.single("image"),
-  validateBlog,
+  validateEditBlog,
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
