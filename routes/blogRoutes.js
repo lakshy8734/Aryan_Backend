@@ -92,6 +92,39 @@ router.post(
   }
 );
 
+router.put(
+  "/:id",
+  upload.single("image"),
+  validateBlog,
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const blog = await Blog.findById(req.params.id);
+      if (!blog) {
+        return res.status(404).json({ message: "Blog not found" });
+      }
+
+      blog.title = req.body.title;
+      blog.detail = req.body.detail;
+      blog.authorName = req.body.authorName;
+
+      if (req.file) {
+        blog.image = req.file.path; // Update the image if a new one is uploaded
+      }
+
+      const updatedBlog = await blog.save();
+      res.json(updatedBlog);
+    } catch (err) {
+      console.error("Error updating blog:", err);
+      res.status(500).json({ message: "Server Error" });
+    }
+  }
+);
+
 router.get("/", async (req, res) => {
   try {
     const blogs = await Blog.find();
@@ -151,7 +184,6 @@ router.post("/:id/view", async (req, res) => {
   await blog.incrementViewCount();
   res.json({ message: "View count incremented successfully", blog });
 });
-
 
 router.post("/:id/unlike", async (req, res) => {
   const blog = await Blog.findById(req.params.id);
