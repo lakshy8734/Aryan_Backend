@@ -53,7 +53,7 @@ router.post(
       });
 
       // Send the token back to the client
-      res.json({ token });
+      res.json({ token, username });
     } catch (err) {
       console.error("Error logging in admin:", err);
       res.status(500).json({ message: "Server Error" });
