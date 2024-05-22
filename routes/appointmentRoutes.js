@@ -100,28 +100,6 @@ router.post(
     }
 
     try {
-      // Check for duplicate email
-      const existingAppointmentWithEmail = await Appointment.findOne({
-        email: req.body.email,
-      });
-
-      if (existingAppointmentWithEmail) {
-        return res.status(400).json({
-          error: "An appointment with the same email already exists.",
-        });
-      }
-
-      // Check for duplicate phone number
-      const existingAppointmentWithPhoneNo = await Appointment.findOne({
-        phoneNo: req.body.phoneNo,
-      });
-
-      if (existingAppointmentWithPhoneNo) {
-        return res.status(400).json({
-          error: "An appointment with the same phone number already exists.",
-        });
-      }
-
       const appointment = await Appointment.create(req.body);
       console.log(appointment);
       res.status(201).json(appointment);
