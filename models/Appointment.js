@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 
 const appointmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true},
   gender: { type: String, required: true },
   doctorId: { type: String, required: true, unique: false },
   date: { type: Date, required: true },
   time: { type: String, required: true },
-  phoneNo: { type: String, required: true, unique: true  },
+  phoneNo: { type: String, required: true },
   message: { type: String },
   department: { type: String, required: true },
   isActive: { type: Boolean, default: true },

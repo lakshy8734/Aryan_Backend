@@ -100,6 +100,8 @@ router.post(
     }
 
     try {
+      
+
       const appointment = await Appointment.create(req.body);
       console.log(appointment);
       res.status(201).json(appointment);
