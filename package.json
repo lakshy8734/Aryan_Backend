@@ -21,7 +21,7 @@
     "razorpay": "^2.9.2",
     "react-razorpay": "^2.0.1",
     "react-toastify": "^10.0.4",
-    "twilio": "^5.0.2",
+    "twilio": "^5.0.4",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

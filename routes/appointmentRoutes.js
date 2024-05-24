@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const Appointment = require("../models/Appointment");
 const nodemailer = require("nodemailer");
+const Doctor = require("../models/DoctorModel");
 
 // Route to get all appointment times for a specific doctor
 router.get("/appointments/:doctorId", async (req, res) => {
@@ -100,8 +101,6 @@ router.post(
     }
 
     try {
-      
-
       const appointment = await Appointment.create(req.body);
       console.log(appointment);
       res.status(201).json(appointment);
@@ -187,17 +186,18 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// Update appointment status (approve or reject)
+// Update appointment status (approve, reject, or reschedule)
 router.patch("/:id/status", async (req, res) => {
   try {
     const { action } = req.body;
     let update = {};
 
     if (action === "approve") {
-      update = { isApproved: true };
+      update = { isApproved: true, isRescheduled: false };
     } else if (action === "reject") {
-      update = { isApproved: false };
+      update = { isApproved: false, isRescheduled: false };
+    } else if (action === "reschedule") {
+      update = { isApproved: false, isRescheduled: true };
     } else {
       return res.status(400).json({ error: "Invalid action" });
     }
@@ -226,5 +226,73 @@ router.get("/:doctorId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get("/:doctorId/:date", async (req, res) => {
+  const { doctorId, date } = req.params;
+  console.log(`Fetching appointments for doctorId: ${doctorId}, date: ${date}`);
+
+  try {
+    const appointments = await Appointment.find({
+      doctorId: doctorId,
+      date: date,
+    }).select("time");
+    console.log("Appointments found:", appointments);
+    const appointmentTimes = appointments.map(
+      (appointment) => appointment.time
+    );
+    res.status(200).json(appointmentTimes);
+  } catch (error) {
+    console.error("Error fetching appointment times:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// PATCH route to update an appointment by ID
+router.patch('/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log('Received appointment ID:', id);
+
+  const { date, time, doctorId, department } = req.body;
+  console.log('Received data for update:', req.body);
+
+  try {
+    // Find the appointment by ID
+    const appointment = await Appointment.findById(id);
+    console.log('Found appointment:', appointment);
+
+    if (!appointment) {
+      console.log('Appointment not found');
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    // Update appointment fields if provided
+    if (date) {
+      appointment.date = date;
+    }
+    if (time) {
+      appointment.time = time;
+    }
+    if (doctorId) {
+      appointment.doctorId = doctorId;
+    }
+    if (department) {
+      appointment.department = department;
+    }
+
+    // Set isRescheduled to true
+    appointment.isRescheduled = true;
+
+    // Save the updated appointment
+    const updatedAppointment = await appointment.save();
+    console.log('Updated appointment:', updatedAppointment);
+
+    res.status(200).json(updatedAppointment);
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    res.status(500).json({ error: 'An error occurred while updating the appointment' });
+  }
+});
+
+
 
 module.exports = router;
