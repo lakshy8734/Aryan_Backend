@@ -240,6 +240,7 @@ router.get("/:doctorId/:date", async (req, res) => {
     const appointmentTimes = appointments.map(
       (appointment) => appointment.time
     );
+    console.log(appointmentTimes);
     res.status(200).json(appointmentTimes);
   } catch (error) {
     console.error("Error fetching appointment times:", error.message);
@@ -292,6 +293,43 @@ router.patch('/:id', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating the appointment' });
   }
 });
+
+router.post("/send-reschedule-email", async (req, res) => {
+  const { email, appointmentDetails } = req.body;
+
+  try {
+    // Create a transporter object using SMTP transport
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: email,
+      subject: "Appointment Rescheduled Confirmation",
+      html: `
+        <p>Dear ${appointmentDetails.name},</p>
+        <p>Your appointment with Dr. ${appointmentDetails.doctorName} has been successfully rescheduled. Here are the updated details:</p>
+        <p>Appointment Date: ${appointmentDetails.date}</p>
+        <p>Appointment Time: ${appointmentDetails.time}</p>
+        <p>Department: ${appointmentDetails.department}</p>
+        <p>Thank you for choosing our services.</p>
+      `,
+    });
+
+    res.status(200).json({ message: "Reschedule confirmation email sent successfully" });
+  } catch (error) {
+    console.error("Error sending reschedule email:", error.message);
+    res.status(500).json({ error: "Failed to send reschedule confirmation email" });
+  }
+});
+
 
 
 

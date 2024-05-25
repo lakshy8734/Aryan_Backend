@@ -27,8 +27,6 @@ const sendWhatsappMessage = async (name, number, doctorName) => {
   }
 };
 
-
-
 // Define a POST endpoint to send a WhatsApp message
 router.post('/send-whatsapp', async (req, res) => {
   const { name, number, doctorName } = req.body; // Extract name, number, and doctorName from request body
