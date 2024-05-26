@@ -187,9 +187,10 @@ router.get("/", async (req, res) => {
   }
 });
 // Update appointment status (approve, reject, or reschedule)
+// Update appointment status (approve, reject, or reschedule)
 router.patch("/:id/status", async (req, res) => {
   try {
-    const { action } = req.body;
+    const { action, statusMessage } = req.body;
     let update = {};
 
     if (action === "approve") {
@@ -198,10 +199,18 @@ router.patch("/:id/status", async (req, res) => {
       update = { isApproved: false, isRescheduled: false };
     } else if (action === "reschedule") {
       update = { isApproved: false, isRescheduled: true };
+    } else if (action === "pending") {
+      update = { isApproved: undefined, isRescheduled: false };
     } else {
       return res.status(400).json({ error: "Invalid action" });
     }
 
+    // If statusMessage is provided in the request body, include it in the update
+    if (statusMessage) {
+      update.statusMessage = statusMessage;
+    }
+
+    // Update the appointment with the new status and status message
     const appointment = await Appointment.findByIdAndUpdate(
       req.params.id,
       update,
@@ -249,21 +258,21 @@ router.get("/:doctorId/:date", async (req, res) => {
 });
 
 // PATCH route to update an appointment by ID
-router.patch('/:id', async (req, res) => {
+router.patch("/:id", async (req, res) => {
   const { id } = req.params;
-  console.log('Received appointment ID:', id);
+  console.log("Received appointment ID:", id);
 
   const { date, time, doctorId, department } = req.body;
-  console.log('Received data for update:', req.body);
+  console.log("Received data for update:", req.body);
 
   try {
     // Find the appointment by ID
     const appointment = await Appointment.findById(id);
-    console.log('Found appointment:', appointment);
+    console.log("Found appointment:", appointment);
 
     if (!appointment) {
-      console.log('Appointment not found');
-      return res.status(404).json({ error: 'Appointment not found' });
+      console.log("Appointment not found");
+      return res.status(404).json({ error: "Appointment not found" });
     }
 
     // Update appointment fields if provided
@@ -285,12 +294,14 @@ router.patch('/:id', async (req, res) => {
 
     // Save the updated appointment
     const updatedAppointment = await appointment.save();
-    console.log('Updated appointment:', updatedAppointment);
+    console.log("Updated appointment:", updatedAppointment);
 
     res.status(200).json(updatedAppointment);
   } catch (error) {
-    console.error('Error updating appointment:', error);
-    res.status(500).json({ error: 'An error occurred while updating the appointment' });
+    console.error("Error updating appointment:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the appointment" });
   }
 });
 
@@ -323,14 +334,15 @@ router.post("/send-reschedule-email", async (req, res) => {
       `,
     });
 
-    res.status(200).json({ message: "Reschedule confirmation email sent successfully" });
+    res
+      .status(200)
+      .json({ message: "Reschedule confirmation email sent successfully" });
   } catch (error) {
     console.error("Error sending reschedule email:", error.message);
-    res.status(500).json({ error: "Failed to send reschedule confirmation email" });
+    res
+      .status(500)
+      .json({ error: "Failed to send reschedule confirmation email" });
   }
 });
-
-
-
 
 module.exports = router;
