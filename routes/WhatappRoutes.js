@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-require("dotenv").config();
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_FROM_NUMBER;
-const toNumber = process.env.TWILIO_TO_NUMBER;
+const fromNumber = "whatsapp:+14155238886";
+const toNumber = "whatsapp:+917505527485";
 
 const client = require("twilio")(accountSid, authToken);
 
