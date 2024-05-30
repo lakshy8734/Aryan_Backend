@@ -174,7 +174,7 @@ router.patch("/:id/toggle-active", async (req, res) => {
 router.post("/:id/like", async (req, res) => {
   const blog = await Blog.findById(req.params.id);
   if (!blog) {
-    return res.status(404).json({ message: "Blog not found" });
+    return res.status(404).json({ message: "Blog not found" }); 
   }
 
   await blog.incrementLikeCount();
