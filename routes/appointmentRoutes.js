@@ -291,6 +291,7 @@ router.patch("/:id", async (req, res) => {
 
     // Set isRescheduled to true
     appointment.isRescheduled = true;
+    appointment.isApproved = false;
 
     // Save the updated appointment
     const updatedAppointment = await appointment.save();
