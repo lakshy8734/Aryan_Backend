@@ -4,6 +4,8 @@ const router = express.Router();
 const Doctor = require("../models/DoctorModel");
 const multer = require("multer");
 const upload = require("../utils/multerConfig");
+const handleUpload = require("../utils/multerConfig");
+
 const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
@@ -63,9 +65,9 @@ router.get("/", async (req, res) => {
 });
 
 router.post(
- "/",
- [
-    upload.single("image"),
+  "/",
+  [
+    handleUpload,
     check("name")
       .notEmpty()
       .withMessage("Name is required")
@@ -105,8 +107,8 @@ router.post(
         }
       })
       .withMessage("Working days must be a non-empty array"),
- ],
- async (req, res) => {
+  ],
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -145,7 +147,7 @@ router.post(
       console.error("Error adding doctor:", err);
       res.status(500).json({ message: "Server Error" });
     }
- }
+  }
 );
 
 router.get("/:doctorId", async (req, res) => {
@@ -223,17 +225,17 @@ router.patch("/:doctorId/toggle-active", async (req, res) => {
 // Route to fetch a doctor's details by profileId
 router.get("/profile/:profileId", async (req, res) => {
   try {
-     const doctor = await Doctor.findOne({ doctorId: req.params.profileId });
-     if (!doctor) {
-       return res.status(404).json({ message: "Doctor not found" });
-     }
-     // Return all the doctor's details
-     res.json(doctor);
+    const doctor = await Doctor.findOne({ doctorId: req.params.profileId });
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    // Return all the doctor's details
+    res.json(doctor);
   } catch (err) {
-     console.error("Error fetching doctor:", err);
-     res.status(500).json({ message: "Server Error" });
+    console.error("Error fetching doctor:", err);
+    res.status(500).json({ message: "Server Error" });
   }
- });
+});
 
 router.get("/", async (req, res) => {
   try {
@@ -245,7 +247,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-
 module.exports = router;
-

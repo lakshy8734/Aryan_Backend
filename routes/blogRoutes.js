@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Blog = require("../models/BlogModel");
 const multer = require("multer");
-const upload = require("../utils/multerConfig");
+const handleUpload = require("../utils/multerConfig");
 const { body, validationResult } = require("express-validator");
 
 // Add this route to your blogRoutes.js
@@ -63,9 +63,8 @@ const validateBlog = [
 
 router.post(
   "/",
-  upload.single("image"),
+  handleUpload,
   validateBlog,
-  validateImage,
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -78,8 +77,8 @@ router.post(
         detail: req.body.detail,
         image: req.file.path,
         date: Date.now(),
-        authorName: req.body.authorName, // Include authorName
-        time: new Date().toISOString(), // Include time
+        authorName: req.body.authorName,
+        time: new Date().toISOString(),
       });
 
       const savedBlog = await newBlog.save();
@@ -100,7 +99,7 @@ const validateEditBlog = [
 
 router.put(
   "/:id",
-  upload.single("image"),
+  handleUpload,
   validateEditBlog,
   async (req, res) => {
     const errors = validationResult(req);
